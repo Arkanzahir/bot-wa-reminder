@@ -96,6 +96,8 @@ const client = new Client({
 
 // Menyimpan Job Cron berjalan agar bisa direset setiap berganti hari
 let activeCronJobs = [];
+let midnightCronJob = null; // Track cron midnight agar tidak menumpuk
+let isInitializing = false; // Lock agar tidak ada double-call bersamaan
 
 client.on('qr', (qr) => {
     console.log('==============================================');
@@ -114,8 +116,14 @@ client.on('ready', () => {
     // Inisialisasi jadwal langsung saat bot hidup
     initializeDailySchedule();
     
+    // Hentikan cron midnight lama jika ada (mencegah duplikasi saat reconnect)
+    if (midnightCronJob) {
+        midnightCronJob.stop();
+        midnightCronJob = null;
+    }
+    
     // Refresh jadwal otomatis setiap reset hari (00:01 AM) 
-    cron.schedule('1 0 * * *', () => {
+    midnightCronJob = cron.schedule('1 0 * * *', () => {
         console.log('Menyiapkan jadwal sholat baru untuk hari ini...');
         initializeDailySchedule();
     }, {
@@ -124,6 +132,13 @@ client.on('ready', () => {
 });
 
 async function initializeDailySchedule() {
+    // GUARD: Cegah eksekusi ganda bersamaan (race condition saat reconnect)
+    if (isInitializing) {
+        console.log('⚠️ initializeDailySchedule sudah berjalan, melewati panggilan duplikat...');
+        return;
+    }
+    isInitializing = true;
+
     // 1. Matikan & Reset Job lama (jika ada)
     activeCronJobs.forEach(job => job.stop());
     activeCronJobs = [];
@@ -270,6 +285,8 @@ async function initializeDailySchedule() {
 
     } catch (error) {
         console.error('❌ Gagal mengambil data jadwal sholat:', error.message);
+    } finally {
+        isInitializing = false; // Buka kunci agar jadwal bisa di-refresh lagi nanti
     }
 }
 
