@@ -14,8 +14,9 @@ const moment = require('moment-timezone');
 // Contoh Nomor: '6281234567890@c.us' (harus ada @c.us, gunakan 62 untuk Indonesia)
 // Tujuan Pengiriman: Bisa banyak grup / japri sekaligus
 const TARGET_NUMBERS = [
-    { id: '120363400351305898@g.us', name: 'Grup Kontrakan BME' },
-    { id: '101902545113296@lid', name: 'Japri Arkan' }
+    { id: '120363400351305898@g.us', name: 'Grup Kontrakan BME', city: 'Surabaya' },
+    { id: '101902545113296@lid', name: 'Japri Arkan', city: 'Surabaya' },
+    { id: '205080426999829@lid', name: 'Anna', city: 'Yogyakarta' }
 ];
 
 const MENTIONS_DB = {
@@ -35,7 +36,6 @@ const KULIAH_DB = [
     { hari: 5, jam: '07:00', matkul: 'Teknologi Komputasi Awan (C)', ruang: 'TW2 704', peserta: ['Arkan'] }
 ];
 
-const CITY = 'Surabaya';
 const COUNTRY = 'Indonesia';
 const TIMEZONE = 'Asia/Jakarta';
 
@@ -83,60 +83,66 @@ async function initializeDailySchedule() {
 
     // 2. Ambil data jadwal Sholat harian
     try {
-        const response = await axios.get(`https://api.aladhan.com/v1/timingsByCity?city=${CITY}&country=${COUNTRY}&method=11`);
-        const timings = response.data.data.timings;
-        console.log(`\n📅 Berhasil mendapatkan jadwal sholat wilayah ${CITY} untuk hari ini:`);
-        console.log(timings);
+        // Ambil kota unik dari daftar user
+        const uniqueCities = [...new Set(TARGET_NUMBERS.map(t => t.city))];
 
-        // 3. Daftarkan Jadwal ke Cron:
-        
-        // --- JADWAL TAHAJUD (Fixed Jam 03:00) ---
-        scheduleMessage('0 3 * * *', 
-            `🌙 *WAKTU TAHAJUD* 🌙\n\nSaatnya bangun untuk sholat Tahajud dan bermunajat kepada Allah SWT.`
-        );
+        for (const city of uniqueCities) {
+            const response = await axios.get(`https://api.aladhan.com/v1/timingsByCity?city=${city}&country=${COUNTRY}&method=11`);
+            const timings = response.data.data.timings;
+            console.log(`\n📅 Berhasil mendapatkan jadwal sholat wilayah ${city} untuk hari ini:`);
+            console.log(timings);
 
-        // --- JADWAL SAHUR (45 menit sebelum Imsak - Otomatis menyesuaikan) ---
-        const imsakTime = moment(timings.Imsak, 'HH:mm');
-        const sahurTime = imsakTime.clone().subtract(45, 'minutes');
-        scheduleMessage(`${sahurTime.minute()} ${sahurTime.hour()} * * *`,
-            `🍚 *WAKTU SAHUR* 🍚\n\nSegera bangun dan makan sahur.\n⏳ Imsak pukul: ${timings.Imsak} WIB\n⏳ Subuh pukul: ${timings.Fajr} WIB`
-        );
+            // 3. Saring user yang hanya perlu jadwal kota ini
+            const cityTargets = TARGET_NUMBERS.filter(t => t.city === city);
 
-        // --- JADWAL IMSAK ---
-        const imsakMoment = moment(timings.Imsak, 'HH:mm');
-        scheduleMessage(`${imsakMoment.minute()} ${imsakMoment.hour()} * * *`,
-            `⚠️ *WAKTU IMSAK* ⚠️\n\nWilayah: ${CITY}\nWaktu: ${timings.Imsak} WIB\n\n_Segera selesaikan makan & minum Anda. Sebentar lagi azan Subuh._`
-        );
+            // --- JADWAL TAHAJUD (Fixed Jam 03:00) ---
+            scheduleMessage('0 3 * * *', 
+                `🌙 *WAKTU TAHAJUD* 🌙\n\nSaatnya bangun untuk sholat Tahajud dan bermunajat kepada Allah SWT.`, cityTargets
+            );
 
-        // --- JADWAL SUBUH ---
-        const subuhMoment = moment(timings.Fajr, 'HH:mm');
-        scheduleMessage(`${subuhMoment.minute()} ${subuhMoment.hour()} * * *`,
-            `🕋 *WAKTU SHOLAT TIBA* 🕋\n\nWilayah: ${CITY}\nWaktu: Subuh (${timings.Fajr} WIB)\n\n_Mari sejenak tinggalkan aktivitas dan laksanakan ibadah._`
-        );
-        
-        // --- JADWAL DZUHUR ---
-        const dzuhurMoment = moment(timings.Dhuhr, 'HH:mm');
-        scheduleMessage(`${dzuhurMoment.minute()} ${dzuhurMoment.hour()} * * *`,
-            `🕋 *WAKTU SHOLAT TIBA* 🕋\n\nWilayah: ${CITY}\nWaktu: Dzuhur (${timings.Dhuhr} WIB)\n\n_Mari sejenak tinggalkan aktivitas dan laksanakan ibadah._`
-        );
+            // --- JADWAL SAHUR (45 menit sebelum Imsak - Otomatis menyesuaikan) ---
+            const imsakTime = moment(timings.Imsak, 'HH:mm');
+            const sahurTime = imsakTime.clone().subtract(45, 'minutes');
+            scheduleMessage(`${sahurTime.minute()} ${sahurTime.hour()} * * *`,
+                `🍚 *WAKTU SAHUR* 🍚\n\nSegera bangun dan makan sahur.\n⏳ Imsak pukul: ${timings.Imsak} WIB\n⏳ Subuh pukul: ${timings.Fajr} WIB`, cityTargets
+            );
 
-        // --- JADWAL ASHAR ---
-        const asharMoment = moment(timings.Asr, 'HH:mm');
-        scheduleMessage(`${asharMoment.minute()} ${asharMoment.hour()} * * *`,
-            `🕋 *WAKTU SHOLAT TIBA* 🕋\n\nWilayah: ${CITY}\nWaktu: Ashar (${timings.Asr} WIB)\n\n_Mari sejenak tinggalkan aktivitas dan laksanakan ibadah._`
-        );
+            // --- JADWAL IMSAK ---
+            const imsakMoment = moment(timings.Imsak, 'HH:mm');
+            scheduleMessage(`${imsakMoment.minute()} ${imsakMoment.hour()} * * *`,
+                `⚠️ *WAKTU IMSAK* ⚠️\n\nWilayah: ${city}\nWaktu: ${timings.Imsak} WIB\n\n_Segera selesaikan makan & minum Anda. Sebentar lagi azan Subuh._`, cityTargets
+            );
 
-        // --- JADWAL MAGHRIB ---
-        const maghribMoment = moment(timings.Maghrib, 'HH:mm');
-        scheduleMessage(`${maghribMoment.minute()} ${maghribMoment.hour()} * * *`,
-            `🕋 *WAKTU SHOLAT TIBA* 🕋\n\nWilayah: ${CITY}\nWaktu: Maghrib (${timings.Maghrib} WIB)\n\n_Mari sejenak tinggalkan aktivitas dan laksanakan ibadah._`
-        );
+            // --- JADWAL SUBUH ---
+            const subuhMoment = moment(timings.Fajr, 'HH:mm');
+            scheduleMessage(`${subuhMoment.minute()} ${subuhMoment.hour()} * * *`,
+                `🕋 *WAKTU SHOLAT TIBA* 🕋\n\nWilayah: ${city}\nWaktu: Subuh (${timings.Fajr} WIB)\n\n_Mari sejenak tinggalkan aktivitas dan laksanakan ibadah._`, cityTargets
+            );
+            
+            // --- JADWAL DZUHUR ---
+            const dzuhurMoment = moment(timings.Dhuhr, 'HH:mm');
+            scheduleMessage(`${dzuhurMoment.minute()} ${dzuhurMoment.hour()} * * *`,
+                `🕋 *WAKTU SHOLAT TIBA* 🕋\n\nWilayah: ${city}\nWaktu: Dzuhur (${timings.Dhuhr} WIB)\n\n_Mari sejenak tinggalkan aktivitas dan laksanakan ibadah._`, cityTargets
+            );
 
-        // --- JADWAL ISYA ---
-        const isyaMoment = moment(timings.Isha, 'HH:mm');
-        scheduleMessage(`${isyaMoment.minute()} ${isyaMoment.hour()} * * *`,
-            `🕋 *WAKTU SHOLAT TIBA* 🕋\n\nWilayah: ${CITY}\nWaktu: Isya (${timings.Isha} WIB)\n\n_Mari sejenak tinggalkan aktivitas dan laksanakan ibadah._`
-        );
+            // --- JADWAL ASHAR ---
+            const asharMoment = moment(timings.Asr, 'HH:mm');
+            scheduleMessage(`${asharMoment.minute()} ${asharMoment.hour()} * * *`,
+                `🕋 *WAKTU SHOLAT TIBA* 🕋\n\nWilayah: ${city}\nWaktu: Ashar (${timings.Asr} WIB)\n\n_Mari sejenak tinggalkan aktivitas dan laksanakan ibadah._`, cityTargets
+            );
+
+            // --- JADWAL MAGHRIB ---
+            const maghribMoment = moment(timings.Maghrib, 'HH:mm');
+            scheduleMessage(`${maghribMoment.minute()} ${maghribMoment.hour()} * * *`,
+                `🕋 *WAKTU SHOLAT TIBA* 🕋\n\nWilayah: ${city}\nWaktu: Maghrib (${timings.Maghrib} WIB)\n\n_Mari sejenak tinggalkan aktivitas dan laksanakan ibadah._`, cityTargets
+            );
+
+            // --- JADWAL ISYA ---
+            const isyaMoment = moment(timings.Isha, 'HH:mm');
+            scheduleMessage(`${isyaMoment.minute()} ${isyaMoment.hour()} * * *`,
+                `🕋 *WAKTU SHOLAT TIBA* 🕋\n\nWilayah: ${city}\nWaktu: Isya (${timings.Isha} WIB)\n\n_Mari sejenak tinggalkan aktivitas dan laksanakan ibadah._`, cityTargets
+            );
+        }
 
         // --- JADWAL KULIAH ARKAN (Khusus Japri) ---
         const targetIdKhusus = '101902545113296@lid'; // Hardcoded ke Japri Arkan sementara waktu
@@ -165,12 +171,12 @@ async function initializeDailySchedule() {
 }
 
 // Helper: Menyisipkan Task ke list eksekusi
-function scheduleMessage(cronTime, messageText) {
+function scheduleMessage(cronTime, messageText, targetsArray) {
     const job = cron.schedule(cronTime, async () => {
         const now = moment().tz(TIMEZONE).format('HH:mm:ss');
         console.log(`[${now}] Menjalankan aksi: Mengirim pengingat pesan...`);
         
-        for (const target of TARGET_NUMBERS) {
+        for (const target of targetsArray) {
             try {
                 await client.sendMessage(target.id, messageText);
                 console.log(` - Pesan sukses terkirim ke: ${target.name} (${target.id})`);
