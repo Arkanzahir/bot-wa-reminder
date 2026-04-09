@@ -37,6 +37,10 @@ client.on('qr', (qr) => {
     console.log('TOLONG SCAN BARKODE DI BAWAH MENGGUNAKAN WA-MU:');
     qrcode.generate(qr, { small: true });
     console.log('==============================================');
+    console.log('🚨 JIKA BARKODE DI ATAS GEPENG / GAGAL DI-SCAN 🚨');
+    console.log('COPY DAN BUKA LINK DI BAWAH INI KE BROWSER-MU UNTUK MELIHAT QR-NYA:');
+    console.log(`https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(qr)}`);
+    console.log('==============================================');
 });
 
 client.on('ready', () => {
