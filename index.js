@@ -16,24 +16,71 @@ const moment = require('moment-timezone');
 const TARGET_NUMBERS = [
     { id: '120363400351305898@g.us', name: 'Grup Kontrakan BME', city: 'Surabaya' },
     { id: '101902545113296@lid', name: 'Japri Arkan', city: 'Surabaya' },
-    { id: '205080426999829@lid', name: 'Anna', city: 'Yogyakarta' }
+    { id: '205080426999829@lid', name: 'Anna', city: 'Yogyakarta' },
+    { id: '66014150688999@lid', name: 'Rara Hama', city: 'Surabaya' }
 ];
 
 const MENTIONS_DB = {
-    'Arkan': '6289612030168@c.us'
+    'Arkan': '6289612030168@c.us',
+    'Rafli': '6287834492419@c.us',
+    'Hilman': '6285693889022@c.us',
+    'Lutfan': '6282126392515@c.us',
+    'Anna': '205080426999829@lid',
+    'Rara': '66014150688999@lid'
 };
 
 const KULIAH_DB = [
-    { hari: 1, jam: '07:00', matkul: 'Integrasi Sistem (C)', ruang: 'TW2 703', peserta: ['Arkan'] },
-    { hari: 1, jam: '13:30', matkul: 'Big Data dan Data Lakehouse (C)', ruang: 'TW2 704', peserta: ['Arkan'] },
-    { hari: 2, jam: '07:00', matkul: 'Manajemen Insiden Keamanan Siber (C)', ruang: 'TW2 704', peserta: ['Arkan'] },
-    { hari: 2, jam: '13:30', matkul: 'Kalkulus 2 (109)', ruang: 'TW1-804', peserta: ['Arkan'] },
-    { hari: 3, jam: '07:00', matkul: 'Security Operations Center (C)', ruang: 'TW2 702', peserta: ['Arkan'] },
-    { hari: 3, jam: '10:00', matkul: 'Teknologi Komputasi Awan (C)', ruang: 'TW2 702', peserta: ['Arkan'] },
-    { hari: 3, jam: '13:30', matkul: 'Kecerdasan Artifisial dan Machine Learning (C)', ruang: 'TW2 702', peserta: ['Arkan'] },
-    { hari: 4, jam: '07:00', matkul: 'Kecerdasan Artifisial dan Machine Learning (C)', ruang: 'TW2 904', peserta: ['Arkan'] },
-    { hari: 4, jam: '13:30', matkul: 'Kalkulus 2 (109)', ruang: 'TW1-804', peserta: ['Arkan'] },
-    { hari: 5, jam: '07:00', matkul: 'Teknologi Komputasi Awan (C)', ruang: 'TW2 704', peserta: ['Arkan'] }
+    // === JADWAL ARKAN & RARA ===
+    { hari: 1, jam: '07:00', matkul: 'Integrasi Sistem (C)', ruang: 'TW2 703', peserta: ['Arkan', 'Rara'] },
+    { hari: 1, jam: '13:30', matkul: 'Big Data dan Data Lakehouse (C)', ruang: 'TW2 704', peserta: ['Arkan', 'Rara'] },
+    { hari: 2, jam: '07:00', matkul: 'Manajemen Insiden Keamanan Siber (C)', ruang: 'TW2 704', peserta: ['Arkan', 'Rara'] },
+    { hari: 2, jam: '13:30', matkul: 'Kalkulus 2 (109)', ruang: 'TW1-804', peserta: ['Arkan', 'Rara'] },
+    { hari: 3, jam: '07:00', matkul: 'Security Operations Center (C)', ruang: 'TW2 702', peserta: ['Arkan', 'Rara'] },
+    { hari: 3, jam: '10:00', matkul: 'Teknologi Komputasi Awan (C)', ruang: 'TW2 702', peserta: ['Arkan', 'Rara'] },
+    { hari: 3, jam: '13:30', matkul: 'Kecerdasan Artifisial dan Machine Learning (C)', ruang: 'TW2 702', peserta: ['Arkan', 'Rara'] },
+    { hari: 4, jam: '07:00', matkul: 'Kecerdasan Artifisial dan Machine Learning (C)', ruang: 'TW2 904', peserta: ['Arkan', 'Rara'] },
+    { hari: 4, jam: '13:30', matkul: 'Kalkulus 2 (109)', ruang: 'TW1-804', peserta: ['Arkan', 'Rara'] },
+    { hari: 5, jam: '07:00', matkul: 'Teknologi Komputasi Awan (C)', ruang: 'TW2 704', peserta: ['Arkan', 'Rara'] },
+
+    // === JADWAL RAFLI ===
+    { hari: 1, jam: '10:00', matkul: 'Pengolahan Sinyal Digital (U)', ruang: 'TW2-501', peserta: ['Rafli'] },
+    { hari: 2, jam: '10:00', matkul: 'Jaringan Komunikasi Data (T)', ruang: 'TW2-502', peserta: ['Rafli'] },
+    { hari: 3, jam: '10:00', matkul: 'Rangkaian Elektronika (T)', ruang: 'C-111', peserta: ['Rafli'] },
+    { hari: 3, jam: '13:30', matkul: 'Sistem Tertanam dalam Telekomunikasi (U)', ruang: 'TW2-503', peserta: ['Rafli'] },
+    { hari: 5, jam: '07:00', matkul: 'Proses Stokastik (U)', ruang: 'TW2-503', peserta: ['Rafli'] },
+    { hari: 5, jam: '08:00', matkul: 'Kalkulus 2 (124)', ruang: 'TW1-802', peserta: ['Rafli'] },
+    { hari: 5, jam: '13:30', matkul: 'Jaringan Komunikasi Nirkabel (U)', ruang: 'TW2-505', peserta: ['Rafli'] },
+    { hari: 6, jam: '07:00', matkul: 'Laboratorium Teknik Telekomunikasi 2 (T)', ruang: 'C-101', peserta: ['Rafli'] },
+
+    // === JADWAL HILMAN ===
+    { hari: 2, jam: '15:30', matkul: 'Manajemen Basis Data (B)', ruang: 'TIF 104', peserta: ['Hilman'] },
+    { hari: 3, jam: '07:00', matkul: 'Otomata (C)', ruang: 'TIF 111', peserta: ['Hilman'] },
+    { hari: 3, jam: '10:00', matkul: 'Probabilitas dan Statistik (A)', ruang: 'TIF 102', peserta: ['Hilman'] },
+    { hari: 3, jam: '13:30', matkul: 'Perancangan Perangkat Lunak (B)', ruang: 'TIF 104', peserta: ['Hilman'] },
+    { hari: 3, jam: '15:30', matkul: 'Pembelajaran Mesin (B)', ruang: 'TIF 104', peserta: ['Hilman'] },
+    { hari: 4, jam: '10:00', matkul: 'Perancangan dan Analisis Algoritma (F)', ruang: 'TIF 104', peserta: ['Hilman'] },
+    { hari: 5, jam: '13:30', matkul: 'Etika Profesi (A)', ruang: 'IF-219', peserta: ['Hilman'] },
+
+    // === JADWAL LUTFAN ===
+    { hari: 1, jam: '10:00', matkul: 'Pengolahan Sinyal Digital (U)', ruang: 'TW2-501', peserta: ['Lutfan'] },
+    { hari: 2, jam: '07:00', matkul: 'Sistem Komunikasi (U)', ruang: 'TW2-504', peserta: ['Lutfan'] },
+    { hari: 3, jam: '07:00', matkul: 'Sistem Komunikasi (U)', ruang: 'TW2-501', peserta: ['Lutfan'] },
+    { hari: 3, jam: '13:30', matkul: 'Sistem Tertanam dalam Telekomunikasi (U)', ruang: 'TW2-503', peserta: ['Lutfan'] },
+    { hari: 4, jam: '10:00', matkul: 'Rekayasa Internet (T)', ruang: 'TW2-503', peserta: ['Lutfan'] },
+    { hari: 4, jam: '13:30', matkul: 'Elektronika Telekomunikasi (U)', ruang: 'TW2-501', peserta: ['Lutfan'] },
+    { hari: 5, jam: '07:00', matkul: 'Proses Stokastik (U)', ruang: 'TW2-503', peserta: ['Lutfan'] },
+    { hari: 5, jam: '13:30', matkul: 'Jaringan Komunikasi Nirkabel (U)', ruang: 'TW2-505', peserta: ['Lutfan'] },
+
+    // === JADWAL ANNA ===
+    { hari: 1, jam: '12:30', matkul: 'Kelas Bahasa', ruang: '404', peserta: ['Anna'] },
+    { hari: 2, jam: '07:00', matkul: 'Tafsir dan Hadist Ekonomi', ruang: '402', peserta: ['Anna'] },
+    { hari: 2, jam: '10:00', matkul: 'Manajemen', ruang: '406', peserta: ['Anna'] },
+    { hari: 2, jam: '15:15', matkul: 'Bahasa Arab', ruang: '402', peserta: ['Anna'] },
+    { hari: 3, jam: '07:00', matkul: 'Statistik', ruang: '302', peserta: ['Anna'] },
+    { hari: 3, jam: '11:00', matkul: 'Ulum Hadist', ruang: '303', peserta: ['Anna'] },
+    { hari: 4, jam: '07:00', matkul: 'Ekonomi Makro', ruang: '501', peserta: ['Anna'] },
+    { hari: 4, jam: '09:45', matkul: 'Ekonomi Mikro II', ruang: '302', peserta: ['Anna'] },
+    { hari: 4, jam: '14:45', matkul: 'Kewarganegaraan', ruang: '501', peserta: ['Anna'] }
 ];
 
 const COUNTRY = 'Indonesia';
@@ -144,23 +191,79 @@ async function initializeDailySchedule() {
             );
         }
 
-        // --- JADWAL KULIAH ARKAN (Khusus Japri) ---
-        const targetIdKhusus = '101902545113296@lid'; // Hardcoded ke Japri Arkan sementara waktu
-        
+        // --- JADWAL KULIAH (Mendukung Multi-Destinasi: Grup & Japri) ---
+        const PESERTA_ROUTING = {
+            'Arkan': ['120363400351305898@g.us', '101902545113296@lid'], // Grup & Japri
+            'Rafli': ['120363400351305898@g.us'],
+            'Hilman': ['120363400351305898@g.us'],
+            'Lutfan': ['120363400351305898@g.us'],
+            'Anna': ['205080426999829@lid'],
+            'Rara': ['66014150688999@lid']
+        };
+
+        const groupedKuliah = {};
         KULIAH_DB.forEach(kuliah => {
-            const timeObj = moment(kuliah.jam, 'HH:mm').subtract(45, 'minutes');
+            kuliah.peserta.forEach(p => {
+                const dests = PESERTA_ROUTING[p] || [];
+                dests.forEach(dest => {
+                    const key = `${dest}_${kuliah.hari}_${kuliah.jam}`;
+                    if (!groupedKuliah[key]) {
+                        groupedKuliah[key] = {
+                            dest: dest,
+                            hari: kuliah.hari,
+                            jam: kuliah.jam,
+                            matkuls: {}
+                        };
+                    }
+                    
+                    const mkKey = `${kuliah.matkul}_${kuliah.ruang}`;
+                    if (!groupedKuliah[key].matkuls[mkKey]) {
+                        groupedKuliah[key].matkuls[mkKey] = {
+                            matkul: kuliah.matkul,
+                            ruang: kuliah.ruang,
+                            peserta: []
+                        };
+                    }
+                    if (!groupedKuliah[key].matkuls[mkKey].peserta.includes(p)) {
+                        groupedKuliah[key].matkuls[mkKey].peserta.push(p);
+                    }
+                });
+            });
+        });
+
+        // Buat cronjob per destinasi per waktu
+        Object.values(groupedKuliah).forEach(group => {
+            const timeObj = moment(group.jam, 'HH:mm').subtract(45, 'minutes');
             const cronMnt = timeObj.minute();
             const cronHr = timeObj.hour();
-            const cronDay = kuliah.hari; // 1=Senin, 5=Jumat
-            
-            // Susun nama dan id khusus buat di-Mention
-            const stringPeserta = kuliah.peserta.map(p => '@' + p).join(', ');
-            const arrMentions = kuliah.peserta.map(p => MENTIONS_DB[p]).filter(Boolean); // Buang jika null
-            
+            const cronDay = group.hari;
             const namaHari = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'][cronDay] || '';
-            const msgTeks = `🎓 *PENGINGAT JADWAL KULIAH* 🎓\n\nMata Kuliah : ${kuliah.matkul} | ${kuliah.ruang}\nWaktu       : ${namaHari}, ${kuliah.jam} WIB\nPeserta     : ${stringPeserta}\n\n_"Jangan biarkan rasa malas ngelahin mimpi yang kamu kejar"_`;
+            const emojiList = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟'];
+
+            let daftarPeserta = '';
+            let allMentions = [];
             
-            scheduleUniversityMessage(`${cronMnt} ${cronHr} * * ${cronDay}`, msgTeks, targetIdKhusus, arrMentions);
+            Object.values(group.matkuls).forEach((mk, idx) => {
+                const emoji = emojiList[idx] || `${idx + 1}.`;
+                
+                let names = '';
+                // Jika dikirim ke grup, gunakan format mention @nama
+                if (group.dest.includes('@g.us')) {
+                    names = mk.peserta.map(p => '@' + p).join(', ');
+                    mk.peserta.forEach(p => {
+                        if (MENTIONS_DB[p]) allMentions.push(MENTIONS_DB[p]);
+                    });
+                } else {
+                    // Jika ke japri, cukup sebut nama biasa karena sedang membaca chat dirinya
+                    names = mk.peserta.join(', ');
+                }
+                
+                daftarPeserta += `${emoji} ${names}\n└ ${mk.matkul} — ${mk.ruang}\n\n`;
+            });
+
+            const msgTeks = `🎓 *PENGINGAT JADWAL KULIAH* 🎓\n📅 ${namaHari}, ${group.jam} WIB\n\n${daftarPeserta.trim()}\n\n_"Jangan biarkan rasa malas ngelahin mimpi yang kamu kejar"_`;
+
+            scheduleUniversityMessage(`${cronMnt} ${cronHr} * * ${cronDay}`, msgTeks, group.dest, allMentions);
         });
 
         console.log(`[!] Sebanyak ${activeCronJobs.length} jadwal pengingat aktif hari ini.\n`);
@@ -224,17 +327,20 @@ client.on('message_create', async msg => {
     // Fitur di bawah ini hanya akan aktif jika yang mengetik pesannya dari HP kamu sendiri (fromMe = true)
     if (msg.fromMe) {
         
-        // 2. Fitur Tambah Target Gaib (Format: !tambah ID Nama Lengkap Target)
+        // 2. Fitur Tambah Target (Format: !tambah ID Kota Nama Lengkap Target)
         if (msg.body.startsWith('!tambah ')) {
             const parts = msg.body.split(' ');
             const newId = parts[1]?.trim();
-            const newName = parts.slice(2).join(' ').trim() || 'Tanpa Nama (Manual)';
+            const newCity = parts[2]?.trim() || 'Surabaya';
+            const newName = parts.slice(3).join(' ').trim() || 'Tanpa Nama (Manual)';
             
             if (newId && !TARGET_NUMBERS.find(t => t.id === newId)) {
-                TARGET_NUMBERS.push({ id: newId, name: newName });
-                msg.reply(`✅ SUKSES DITAMBAHKAN:\n*${newName}*\n(ID: ${newId})\n\nTarget akan dikirimi alarm sholat mulai saat ini! 😎`);
+                TARGET_NUMBERS.push({ id: newId, name: newName, city: newCity });
+                msg.reply(`✅ SUKSES DITAMBAHKAN:\n*${newName}*\n(ID: ${newId})\n🏙️ Kota: ${newCity}\n\nTarget akan dikirimi alarm sholat mulai saat ini! 😎`);
+                // Auto-refresh jadwal agar langsung aktif
+                initializeDailySchedule();
             } else {
-                msg.reply(`⚠️ GAGAL:\nFormat salah (Harus: !tambah ID Nama), atau ID sudah terdaftar.`);
+                msg.reply(`⚠️ GAGAL:\nFormat salah atau ID sudah terdaftar.\n\n_Format: !tambah <ID> <Kota> <Nama>_\n_Contoh: !tambah 12345@g.us Surabaya Grup Keluarga_`);
             }
         }
         
@@ -253,7 +359,7 @@ client.on('message_create', async msg => {
 
         // 4. Cek Semua Daftar
         if (msg.body === '!cek') {
-            const list = TARGET_NUMBERS.map((t, n) => `${n+1}. *${t.name}*\n   └ ID: ${t.id}`).join('\n\n');
+            const list = TARGET_NUMBERS.map((t, n) => `${n+1}. *${t.name}*\n   └ ID: ${t.id}\n   └ 🏙️ Kota: ${t.city}`).join('\n\n');
             msg.reply(`📂 *DAFTAR TARGET AKTIF:*\n\n${list}\n\n_(Total: ${TARGET_NUMBERS.length} Tujuan)_`);
         }
 
@@ -262,9 +368,9 @@ client.on('message_create', async msg => {
             msg.reply(`🤖 *PANDUAN ADMIN BOT SHOLAT* 🤖\n\n` +
             `Berikut panduan penulisan perintahnya:\n\n` +
             `1️⃣ *!ping*\n└ Fungsi: Mengetahui ID dari sebuah chat/grup.\n└ Cara: Ketik !ping di grup yang dituju\n\n` +
-            `2️⃣ *!tambah <ID> <Nama>*\n└ Fungsi: Mendaftarkan grup/orang ke alarm sholat.\n└ Cara: \`!tambah 12345@g.us Grup Keluarga\`\n\n` +
+            `2️⃣ *!tambah <ID> <Kota> <Nama>*\n└ Fungsi: Mendaftarkan grup/orang ke alarm sholat.\n└ Cara: \`!tambah 12345@g.us Surabaya Grup Keluarga\`\n\n` +
             `3️⃣ *!hapus <ID>*\n└ Fungsi: Menghapus grup/orang dari alarm.\n└ Cara: \`!hapus 12345@g.us\`\n\n` +
-            `4️⃣ *!cek*\n└ Fungsi: Melihat daftar orang yang akan menerima pesan saat ini.\n\n` +
+            `4️⃣ *!cek*\n└ Fungsi: Melihat daftar target beserta kota masing-masing.\n\n` +
             `⚠️ _Catatan: Saat mencopy ID, pastikan tanda bintang (*) atau spasi berlebih tidak ikut tercopy!_`);
         }
     }
