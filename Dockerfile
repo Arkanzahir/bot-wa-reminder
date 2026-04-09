@@ -19,18 +19,18 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Aturan Mutlak Hugging Face: Aplikasi TIDAK BOLEH berjalan sebagai root, harus menggunakan user 1000
-RUN useradd -m -u 1000 myuser
-USER myuser
+# Karena sistem Node.js sudah punya user bernama "node" dengan ID 1000, kita pakai itu saja:
+USER node
 
 # Set working direktori di dalam server cloud
 WORKDIR /app
 
 # Copy konfigurasi utama & install module Node.js
-COPY --chown=myuser package*.json ./
+COPY --chown=node package*.json ./
 RUN npm install
 
 # Tarik semua file index.js dll ke server
-COPY --chown=myuser . .
+COPY --chown=node . .
 
 # Hugging Face Spaces menggunakan Port 7860 secara bawaan
 ENV PORT=7860
