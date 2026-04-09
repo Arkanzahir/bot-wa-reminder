@@ -151,7 +151,8 @@ async function initializeDailySchedule() {
             const stringPeserta = kuliah.peserta.map(p => '@' + p).join(', ');
             const arrMentions = kuliah.peserta.map(p => MENTIONS_DB[p]).filter(Boolean); // Buang jika null
             
-            const msgTeks = `🎓 *PENGINGAT JADWAL KULIAH* 🎓\n\nMata Kuliah : ${kuliah.matkul} | ${kuliah.ruang}\nWaktu       : ${kuliah.jam} WIB\nPeserta     : ${stringPeserta}\n\n_"Jangan biarkan rasa malas ngelahin mimpi yang kamu kejar"_`;
+            const namaHari = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'][cronDay] || '';
+            const msgTeks = `🎓 *PENGINGAT JADWAL KULIAH* 🎓\n\nMata Kuliah : ${kuliah.matkul} | ${kuliah.ruang}\nWaktu       : ${namaHari}, ${kuliah.jam} WIB\nPeserta     : ${stringPeserta}\n\n_"Jangan biarkan rasa malas ngelahin mimpi yang kamu kejar"_`;
             
             scheduleUniversityMessage(`${cronMnt} ${cronHr} * * ${cronDay}`, msgTeks, targetIdKhusus, arrMentions);
         });
