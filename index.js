@@ -14,8 +14,8 @@ const moment = require('moment-timezone');
 // Contoh Nomor: '6281234567890@c.us' (harus ada @c.us, gunakan 62 untuk Indonesia)
 // Tujuan Pengiriman: Bisa banyak grup / japri sekaligus
 const TARGET_NUMBERS = [
-    '28536400306388@lid', // Grup Kontrakan BME
-    '6285703904032@c.us'   // Japri Arkan
+    { id: '28536400306388@lid', name: 'Grup Kontrakan BME' },
+    { id: '6285703904032@c.us', name: 'Japri Arkan' }
 ];
 
 const CITY = 'Surabaya';
@@ -136,10 +136,10 @@ function scheduleMessage(cronTime, messageText) {
         
         for (const target of TARGET_NUMBERS) {
             try {
-                await client.sendMessage(target, messageText);
-                console.log(` - Pesan sukses terkirim ke: ${target}`);
+                await client.sendMessage(target.id, messageText);
+                console.log(` - Pesan sukses terkirim ke: ${target.name} (${target.id})`);
             } catch (err) {
-                console.error(` - Gagal mengirim ke ${target}:`, err.message);
+                console.error(` - Gagal mengirim ke ${target.name}:`, err.message);
             }
         }
     }, {
@@ -151,11 +151,50 @@ function scheduleMessage(cronTime, messageText) {
 
 // Sistem Pendeteksi ID Grup
 // Jika kamu ingin tau ID sebuah grup (buat diisikan ke TARGET_NUMBERS), undang bot ke grup lalu katakan !ping.
-client.on('message_create', async message => {
-    if (message.body === '!ping') {
-        const chat = await message.getChat();
-        message.reply(`Bot Aktif!\nID Tujuanku adalah:\n*${message.from}*`);
-        console.log(`\n### ID CHAT TERDETEKSI: ${message.from} (Nama Grup/Personal: ${chat.name}) ###\n`);
+client.on('message_create', async msg => {
+    // 1. Fitur cek ID untuk mendaftarkan grup (Bebas untuk umum)
+    if (msg.body === '!ping') {
+        const chat = await msg.getChat();
+        msg.reply(`Pong!\n\nID Chat ini adalah:\n*${chat.id._serialized}*`);
+        console.log('User menanyakan ID:', chat.id._serialized);
+    }
+    
+    // ======== AREA KHUSUS PEMILIK BOT ========
+    // Fitur di bawah ini hanya akan aktif jika yang mengetik pesannya dari HP kamu sendiri (fromMe = true)
+    if (msg.fromMe) {
+        
+        // 2. Fitur Tambah Target Gaib (Format: !tambah ID Nama Lengkap Target)
+        if (msg.body.startsWith('!tambah ')) {
+            const parts = msg.body.split(' ');
+            const newId = parts[1]?.trim();
+            const newName = parts.slice(2).join(' ').trim() || 'Tanpa Nama (Manual)';
+            
+            if (newId && !TARGET_NUMBERS.find(t => t.id === newId)) {
+                TARGET_NUMBERS.push({ id: newId, name: newName });
+                msg.reply(`✅ SUKSES DITAMBAHKAN:\n*${newName}*\n(ID: ${newId})\n\nTarget akan dikirimi alarm sholat mulai saat ini! 😎`);
+            } else {
+                msg.reply(`⚠️ GAGAL:\nFormat salah (Harus: !tambah ID Nama), atau ID sudah terdaftar.`);
+            }
+        }
+        
+        // 3. Fitur Hapus Target
+        if (msg.body.startsWith('!hapus ')) {
+            const idToRemove = msg.body.split(' ')[1]?.trim();
+            const index = TARGET_NUMBERS.findIndex(t => t.id === idToRemove);
+            if (index > -1) {
+                const removedName = TARGET_NUMBERS[index].name;
+                TARGET_NUMBERS.splice(index, 1);
+                msg.reply(`🗑️ BERHASIL DIHAPUS:\n*${removedName}* tidak akan dikirimkan Notifikasi Sholat lagi!`);
+            } else {
+                msg.reply(`⚠️ GAGAL:\nID tersebut tidak ditemukan.`);
+            }
+        }
+
+        // 4. Cek Semua Daftar
+        if (msg.body === '!cek') {
+            const list = TARGET_NUMBERS.map((t, n) => `${n+1}. *${t.name}*\n   └ ID: ${t.id}`).join('\n\n');
+            msg.reply(`📂 *DAFTAR TARGET AKTIF:*\n\n${list}\n\n_(Total: ${TARGET_NUMBERS.length} Tujuan)_`);
+        }
     }
 });
 
