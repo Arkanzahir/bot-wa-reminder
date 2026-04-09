@@ -14,8 +14,8 @@ const moment = require('moment-timezone');
 // Contoh Nomor: '6281234567890@c.us' (harus ada @c.us, gunakan 62 untuk Indonesia)
 // Tujuan Pengiriman: Bisa banyak grup / japri sekaligus
 const TARGET_NUMBERS = [
-    { id: '28536400306388@lid', name: 'Grup Kontrakan BME' },
-    { id: '6285703904032@c.us', name: 'Japri Arkan' }
+    { id: '120363400351305898@g.us', name: 'Grup Kontrakan BME' },
+    { id: '101902545113296@lid', name: 'Japri Arkan' }
 ];
 
 const CITY = 'Surabaya';
