@@ -12,9 +12,10 @@ const moment = require('moment-timezone');
 // ======= KONFIGURASI PENTING =======
 // Masukkan Nomor WA Pribadi atau ID Group di sini.
 // Contoh Nomor: '6281234567890@c.us' (harus ada @c.us, gunakan 62 untuk Indonesia)
-// Contoh Group: '120363025123456789@g.us' (cara tau grup ID: undang bot ke grup, ketik !ping, lihat console)
+// Tujuan Pengiriman: Bisa banyak grup / japri sekaligus
 const TARGET_NUMBERS = [
-    '101902545113296@lid' 
+    '28536400306388@lid', // Grup Kontrakan BME
+    '6285703904032@c.us'   // Japri Arkan
 ];
 
 const CITY = 'Surabaya';
