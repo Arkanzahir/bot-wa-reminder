@@ -195,6 +195,17 @@ client.on('message_create', async msg => {
             const list = TARGET_NUMBERS.map((t, n) => `${n+1}. *${t.name}*\n   └ ID: ${t.id}`).join('\n\n');
             msg.reply(`📂 *DAFTAR TARGET AKTIF:*\n\n${list}\n\n_(Total: ${TARGET_NUMBERS.length} Tujuan)_`);
         }
+
+        // 5. Fitur Bantuan / Panduan
+        if (msg.body === '!help' || msg.body === '!bantuan') {
+            msg.reply(`🤖 *PANDUAN ADMIN BOT SHOLAT* 🤖\n\n` +
+            `Berikut panduan penulisan perintahnya:\n\n` +
+            `1️⃣ *!ping*\n└ Fungsi: Mengetahui ID dari sebuah chat/grup.\n└ Cara: Ketik !ping di grup yang dituju\n\n` +
+            `2️⃣ *!tambah <ID> <Nama>*\n└ Fungsi: Mendaftarkan grup/orang ke alarm sholat.\n└ Cara: \`!tambah 12345@g.us Grup Keluarga\`\n\n` +
+            `3️⃣ *!hapus <ID>*\n└ Fungsi: Menghapus grup/orang dari alarm.\n└ Cara: \`!hapus 12345@g.us\`\n\n` +
+            `4️⃣ *!cek*\n└ Fungsi: Melihat daftar orang yang akan menerima pesan saat ini.\n\n` +
+            `⚠️ _Catatan: Saat mencopy ID, pastikan tanda bintang (*) atau spasi berlebih tidak ikut tercopy!_`);
+        }
     }
 });
 
