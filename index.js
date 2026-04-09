@@ -18,6 +18,23 @@ const TARGET_NUMBERS = [
     { id: '101902545113296@lid', name: 'Japri Arkan' }
 ];
 
+const MENTIONS_DB = {
+    'Arkan': '6289612030168@c.us'
+};
+
+const KULIAH_DB = [
+    { hari: 1, jam: '07:00', matkul: 'Integrasi Sistem (C)', ruang: 'TW2 703', peserta: ['Arkan'] },
+    { hari: 1, jam: '13:30', matkul: 'Big Data dan Data Lakehouse (C)', ruang: 'TW2 704', peserta: ['Arkan'] },
+    { hari: 2, jam: '07:00', matkul: 'Manajemen Insiden Keamanan Siber (C)', ruang: 'TW2 704', peserta: ['Arkan'] },
+    { hari: 2, jam: '13:30', matkul: 'Kalkulus 2 (109)', ruang: 'TW1-804', peserta: ['Arkan'] },
+    { hari: 3, jam: '07:00', matkul: 'Security Operations Center (C)', ruang: 'TW2 702', peserta: ['Arkan'] },
+    { hari: 3, jam: '10:00', matkul: 'Teknologi Komputasi Awan (C)', ruang: 'TW2 702', peserta: ['Arkan'] },
+    { hari: 3, jam: '13:30', matkul: 'Kecerdasan Artifisial dan Machine Learning (C)', ruang: 'TW2 702', peserta: ['Arkan'] },
+    { hari: 4, jam: '07:00', matkul: 'Kecerdasan Artifisial dan Machine Learning (C)', ruang: 'TW2 904', peserta: ['Arkan'] },
+    { hari: 4, jam: '13:30', matkul: 'Kalkulus 2 (109)', ruang: 'TW1-804', peserta: ['Arkan'] },
+    { hari: 5, jam: '07:00', matkul: 'Teknologi Komputasi Awan (C)', ruang: 'TW2 704', peserta: ['Arkan'] }
+];
+
 const CITY = 'Surabaya';
 const COUNTRY = 'Indonesia';
 const TIMEZONE = 'Asia/Jakarta';
@@ -121,6 +138,24 @@ async function initializeDailySchedule() {
             `🕋 *WAKTU SHOLAT TIBA* 🕋\n\nWilayah: ${CITY}\nWaktu: Isya (${timings.Isha} WIB)\n\n_Mari sejenak tinggalkan aktivitas dan laksanakan ibadah._`
         );
 
+        // --- JADWAL KULIAH ARKAN (Khusus Japri) ---
+        const targetIdKhusus = '101902545113296@lid'; // Hardcoded ke Japri Arkan sementara waktu
+        
+        KULIAH_DB.forEach(kuliah => {
+            const timeObj = moment(kuliah.jam, 'HH:mm').subtract(45, 'minutes');
+            const cronMnt = timeObj.minute();
+            const cronHr = timeObj.hour();
+            const cronDay = kuliah.hari; // 1=Senin, 5=Jumat
+            
+            // Susun nama dan id khusus buat di-Mention
+            const stringPeserta = kuliah.peserta.map(p => '@' + p).join(', ');
+            const arrMentions = kuliah.peserta.map(p => MENTIONS_DB[p]).filter(Boolean); // Buang jika null
+            
+            const msgTeks = `🎓 *PENGINGAT JADWAL KULIAH* 🎓\n\nMata Kuliah : ${kuliah.matkul} | ${kuliah.ruang}\nWaktu       : ${kuliah.jam} WIB\nPeserta     : ${stringPeserta}\n\n_"Jangan biarkan rasa malas ngelahin mimpi yang kamu kejar"_`;
+            
+            scheduleUniversityMessage(`${cronMnt} ${cronHr} * * ${cronDay}`, msgTeks, targetIdKhusus, arrMentions);
+        });
+
         console.log(`[!] Sebanyak ${activeCronJobs.length} jadwal pengingat aktif hari ini.\n`);
 
     } catch (error) {
@@ -141,6 +176,25 @@ function scheduleMessage(cronTime, messageText) {
             } catch (err) {
                 console.error(` - Gagal mengirim ke ${target.name}:`, err.message);
             }
+        }
+    }, {
+        timezone: TIMEZONE
+    });
+    
+    activeCronJobs.push(job);
+}
+
+// Helper: Menyisipkan Task Khusus Jadwal Kuliah (Bisa Spesifik Target & Mention)
+function scheduleUniversityMessage(cronTime, messageText, targetId, mentionsArray) {
+    const job = cron.schedule(cronTime, async () => {
+        const now = moment().tz(TIMEZONE).format('HH:mm:ss');
+        console.log(`[${now}] Menjalankan aksi: Mengirim pengingat KULIAH ke ${targetId}...`);
+        
+        try {
+            await client.sendMessage(targetId, messageText, { mentions: mentionsArray });
+            console.log(` - Pesan kuliah sukses terkirim ke: ${targetId}`);
+        } catch (err) {
+            console.error(` - Gagal mengirim kuliah:`, err.message);
         }
     }, {
         timezone: TIMEZONE
