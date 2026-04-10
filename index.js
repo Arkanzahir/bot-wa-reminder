@@ -26,7 +26,9 @@ const MENTIONS_DB = {
     'Hilman': '6285693889022@c.us',
     'Lutfan': '6282126392515@c.us',
     'Anna': '205080426999829@lid',
-    'Rara': '66014150688999@lid'
+    'Rara': '66014150688999@lid',
+    'Rafi': '6285795085024@c.us',
+    'Kahfi': '6287796147089@c.us'
 };
 
 const KULIAH_DB = [
@@ -80,7 +82,27 @@ const KULIAH_DB = [
     { hari: 3, jam: '11:00', matkul: 'Ulum Hadist', ruang: '303', peserta: ['Anna'] },
     { hari: 4, jam: '07:00', matkul: 'Ekonomi Makro', ruang: '501', peserta: ['Anna'] },
     { hari: 4, jam: '09:45', matkul: 'Ekonomi Mikro II', ruang: '302', peserta: ['Anna'] },
-    { hari: 4, jam: '14:45', matkul: 'Kewarganegaraan', ruang: '501', peserta: ['Anna'] }
+    { hari: 4, jam: '14:45', matkul: 'Kewarganegaraan', ruang: '501', peserta: ['Anna'] },
+
+    // === JADWAL RAFI (ARSITEKTUR) ===
+    { hari: 1, jam: '07:00', matkul: 'Perancangan Arsitektur 2 (C)', ruang: 'SF-101/102', peserta: ['Rafi'] },
+    { hari: 2, jam: '07:00', matkul: 'Arsitektur Setelah Pandemi (A)', ruang: 'SF-101', peserta: ['Rafi'] },
+    { hari: 2, jam: '09:00', matkul: 'Matematika (114)', ruang: 'Theater-B', peserta: ['Rafi'] },
+    { hari: 2, jam: '13:30', matkul: 'Perancangan Tanggap Bencana (A)', ruang: 'SF-101', peserta: ['Rafi'] },
+    { hari: 3, jam: '07:00', matkul: 'Asas Perancangan Arsitektur Kontekstual (A)', ruang: 'SF-101', peserta: ['Rafi'] },
+    { hari: 3, jam: '13:30', matkul: 'Dasar Perancangan Kota (A)', ruang: 'SG-101', peserta: ['Rafi'] },
+    { hari: 4, jam: '07:00', matkul: 'Sejarah Arsitektur (A)', ruang: 'SG-101', peserta: ['Rafi'] },
+    { hari: 4, jam: '09:00', matkul: 'Matematika (114)', ruang: 'Theater-B', peserta: ['Rafi'] },
+    { hari: 5, jam: '07:00', matkul: 'Perancangan Arsitektur 2 (C)', ruang: 'SF-101/102', peserta: ['Rafi'] },
+
+    // === JADWAL KAHFI (SISTEM INFORMASI BISNIS) ===
+    { hari: 2, jam: '07:00', matkul: 'Perencanaan Produksi dan Pengendalian Persediaan (D)', ruang: 'IE-105', peserta: ['Kahfi'] },
+    { hari: 2, jam: '10:00', matkul: 'Penelitian Operasional 2 (D)', ruang: 'IE-106', peserta: ['Kahfi'] },
+    { hari: 3, jam: '13:30', matkul: 'Perancangan dan Pengembangan Produk (D)', ruang: 'IE-106', peserta: ['Kahfi'] },
+    { hari: 4, jam: '07:00', matkul: 'Pengendalian dan Penjaminan Kualitas (D)', ruang: 'IE-105', peserta: ['Kahfi'] },
+    { hari: 4, jam: '10:00', matkul: 'Perancangan Sistem Informasi Bisnis (D)', ruang: 'IE-105', peserta: ['Kahfi'] },
+    { hari: 4, jam: '15:30', matkul: 'Pemeliharaan dan Teknik Keandalan (D)', ruang: 'IE-601', peserta: ['Kahfi'] },
+    { hari: 5, jam: '08:00', matkul: 'Kalkulus 1 (134)', ruang: 'TW1-605', peserta: ['Kahfi'] }
 ];
 
 const COUNTRY = 'Indonesia';
@@ -213,7 +235,9 @@ async function initializeDailySchedule() {
             'Hilman': ['120363400351305898@g.us'],
             'Lutfan': ['120363400351305898@g.us'],
             'Anna': ['205080426999829@lid'],
-            'Rara': ['66014150688999@lid']
+            'Rara': ['66014150688999@lid'],
+            'Rafi': ['120363400351305898@g.us'],
+            'Kahfi': ['120363400351305898@g.us']
         };
 
         const groupedKuliah = {};
