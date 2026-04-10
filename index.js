@@ -1,13 +1,32 @@
+require('dotenv').config();
 const { Client, LocalAuth } = require('whatsapp-web.js');
 const qrcode = require('qrcode-terminal');
 const cron = require('node-cron');
 const express = require('express');
+const mongoose = require('mongoose');
 
 // Setup web server agar hosting gratisan tidak sleep
 const app = express();
 const port = process.env.PORT || 3000;
 const axios = require('axios');
 const moment = require('moment-timezone');
+
+// ======= SETUP DATABASE MONGOOSE =======
+const MONGODB_URI = process.env.MONGODB_URI;
+mongoose.connect(MONGODB_URI)
+    .then(() => console.log('✅ Terhubung ke MongoDB Atlas!'))
+    .catch(err => console.error('❌ Gagal koneksi ke MongoDB:', err));
+
+const taskSchema = new mongoose.Schema({
+    title: String,
+    course: String,
+    deadline: Date,
+    participants: [String],
+    isNotified: { type: Boolean, default: false },
+    createdAt: { type: Date, default: Date.now }
+});
+
+const Task = mongoose.model('Task', taskSchema);
 
 // ======= KONFIGURASI PENTING =======
 // Masukkan Nomor WA Pribadi atau ID Group di sini.
@@ -151,6 +170,54 @@ client.on('ready', () => {
     }, {
         timezone: TIMEZONE
     });
+
+    // --- CRON: PENGINGAT TUGAS HARIAN (07:00 AM) ---
+    cron.schedule('0 7 * * *', async () => {
+        console.log('Running Task Reminder Cron (07:00 AM)...');
+        try {
+            const threeDaysLater = moment().add(3, 'days').endOf('day').toDate();
+            const tasks = await Task.find({
+                deadline: { $gte: moment().startOf('day').toDate(), $lte: threeDaysLater }
+            }).sort({ deadline: 1 });
+
+            if (tasks.length > 0) {
+                let report = '📢 *PENGINGAT TUGAS KULIAH* 📢\n\nAda tugas yang mendekati deadline nih:\n\n';
+                tasks.forEach((t, i) => {
+                    const daysLeft = moment(t.deadline).diff(moment().startOf('day'), 'days');
+                    const status = daysLeft === 0 ? '⚠️ *HARI INI!*' : daysLeft === 1 ? '🔴 *BESOK!*' : '🟡 H-${daysLeft}';
+                    report += `${i + 1}. *${t.title}*\n   📚 ${t.course}\n   🗓️ ${moment(t.deadline).format('DD MMM')}\n   ⏰ Status: ${status}\n\n`;
+                });
+
+                // Kirim ke Grup Kontrakan (Utama)
+                const groupChatId = '120363400351305898@g.us';
+                await client.sendMessage(groupChatId, report + '_Semangat nugasnya rek!_');
+
+                // Japri ke masing-masing peserta
+                for (const t of tasks) {
+                    for (const pName of t.participants) {
+                        const jid = MENTIONS_DB[pName];
+                        if (jid) {
+                            await client.sendMessage(jid, `⚠️ *PENGINGAT TUGAS: ${t.title}*\n\nJangan lupa, deadline tugas *${t.course}* adalah tanggal *${moment(t.deadline).format('DD MMMM YYYY')}*.\nSemangat! 💪`);
+                        }
+                    }
+                }
+            }
+        } catch (err) {
+            console.error('Error in Task Reminder Cron:', err);
+        }
+    }, { timezone: TIMEZONE });
+
+    // --- CRON: AUTO-CLEANUP TUGAS KADALUARSA (01:00 AM) ---
+    cron.schedule('0 1 * * *', async () => {
+        console.log('Running Task Cleanup Cron (01:00 AM)...');
+        try {
+            const yesterday = moment().subtract(1, 'days').endOf('day').toDate();
+            const result = await Task.deleteMany({ deadline: { $lte: yesterday } });
+            console.log(`🧹 Auto-Cleanup: Berhasil menghapus ${result.deletedCount} tugas kadaluarsa.`);
+        } catch (err) {
+            console.error('Error in Task Cleanup Cron:', err);
+        }
+    }, { timezone: TIMEZONE });
 });
 
 async function initializeDailySchedule() {
@@ -422,6 +489,83 @@ client.on('message_create', async msg => {
             `3️⃣ *!hapus <ID>*\n└ Fungsi: Menghapus grup/orang dari alarm.\n└ Cara: \`!hapus 12345@g.us\`\n\n` +
             `4️⃣ *!cek*\n└ Fungsi: Melihat daftar target beserta kota masing-masing.\n\n` +
             `⚠️ _Catatan: Saat mencopy ID, pastikan tanda bintang (*) atau spasi berlebih tidak ikut tercopy!_`);
+        }
+    }
+
+    // ======== AREA FITUR TUGAS (Bisa oleh semua anggota terdaftar) ========
+    const sender = msg.from;
+    const isOwner = msg.fromMe;
+    const isRegistered = Object.values(MENTIONS_DB).some(jid => jid === sender || jid.replace('@c.us', '@s.whatsapp.net') === sender);
+
+    if (isOwner || isRegistered) {
+        if (msg.body.startsWith('!tugas ')) {
+            const command = msg.body.split(' ')[1];
+            
+            // --- 1. TAMBAH TUGAS (!tugas tambah Nama | Matkul | YYYY-MM-DD | Peserta) ---
+            if (command === 'tambah') {
+                const content = msg.body.replace('!tugas tambah ', '').split('|');
+                if (content.length < 3) {
+                    return msg.reply('⚠️ Format Salah!\n\n_Format: !tugas tambah [Nama] | [Matkul] | [YYYY-MM-DD] | [Peserta (Opsional)]_');
+                }
+
+                const title = content[0].trim();
+                const course = content[1].trim();
+                const deadlineStr = content[2].trim();
+                const participants = content[3] ? content[3].split(',').map(p => p.trim()) : [];
+
+                const deadline = moment.tz(deadlineStr, 'YYYY-MM-DD', TIMEZONE);
+                if (!deadline.isValid()) {
+                    return msg.reply('⚠️ Tanggal tidak valid!\nGunakan format YYYY-MM-DD (Contoh: 2024-04-20)');
+                }
+
+                try {
+                    const newTask = new Task({
+                        title,
+                        course,
+                        deadline: deadline.toDate(),
+                        participants
+                    });
+                    await newTask.save();
+                    msg.reply(`✅ *TUGAS BERHASIL DICATAT!*\n\n📝: ${title}\n📚: ${course}\n🗓️: ${deadline.format('DD MMMM YYYY')}\n👥: ${participants.join(', ') || 'Semua'}\n\n_Tenang, nanti diingetin H-3 dan tiap pagi!_`);
+                } catch (err) {
+                    msg.reply('❌ Gagal menyimpan ke database.');
+                }
+            }
+
+            // --- 2. CEK TUGAS (!tugas cek) ---
+            if (command === 'cek' || command === 'list') {
+                try {
+                    const tasks = await Task.find({ deadline: { $gte: moment().startOf('day').toDate() } }).sort({ deadline: 1 });
+                    if (tasks.length === 0) {
+                        return msg.reply('📭 *Tidak ada tugas aktif.* Santai dulu aja! 😎');
+                    }
+
+                    let listMsg = '📅 *DAFTAR TUGAS AKTIF* 📅\n\n';
+                    tasks.forEach((t, i) => {
+                        listMsg += `${i + 1}. *${t.title}*\n   📚 ${t.course}\n   🗓️ Deadline: ${moment(t.deadline).format('DD MMM YYYY')}\n   👥 ${t.participants.join(', ') || 'Semua'}\n   🆔 \`${t._id}\`\n\n`;
+                    });
+                    msg.reply(listMsg + '_Ketik !tugas hapus [ID] untuk menghapus._');
+                } catch (err) {
+                    msg.reply('❌ Gagal mengambil data.');
+                }
+            }
+
+            // --- 3. HAPUS TUGAS (!tugas hapus ID) ---
+            if (command === 'hapus') {
+                const taskId = msg.body.split(' ')[2]?.trim();
+                if (!taskId) return msg.reply('⚠️ Masukkan ID-nya! (ID bisa dilihat di !tugas cek)');
+
+                try {
+                    const deleted = await Task.findByIdAndDelete(taskId);
+                    if (deleted) {
+                        msg.reply(`🗑️ Tugas *${deleted.title}* berhasil dihapus!`);
+                    } else {
+                        msg.reply('⚠️ ID tidak ditemukan.');
+                    }
+                } catch (err) {
+                    msg.reply('❌ ID tidak valid / error database.');
+                }
+            }
         }
     }
 });
