@@ -182,11 +182,17 @@ client.on('ready', () => {
 
             if (tasks.length > 0) {
                 let report = '📢 *PENGINGAT TUGAS KULIAH* 📢\n\nAda tugas yang mendekati deadline nih:\n\n';
-                tasks.forEach((t, i) => {
+                tasks.forEach((t) => {
                     const daysLeft = moment(t.deadline).diff(moment().startOf('day'), 'days');
-                    const status = daysLeft === 0 ? '⚠️ *HARI INI!*' : daysLeft === 1 ? '🔴 *BESOK!*' : `🟡 H-${daysLeft}`;
-                    report += `${i + 1}. *${t.title}*\n   📚 ${t.course}\n   🗓️ ${moment(t.deadline).format('DD MMM')}\n   ⏰ Status: ${status}\n\n`;
+                    const status = daysLeft === 0 ? '⚠️ *HARI INI!*' : daysLeft === 1 ? '🔴 *BESOK!*' : `🟡 *H-${daysLeft}*`;
+                    
+                    report += `📝 *${t.title}*\n`;
+                    report += `📚 ${t.course}\n`;
+                    report += `🗓️ ${moment(t.deadline).format('DD MMM')}\n`;
+                    report += `⏰ Status: ${status}\n\n`;
                 });
+
+                report += '_Semangat nugasnya rek!_';
 
                 // Kirim ke Grup Kontrakan (Utama)
                 const groupChatId = '120363400351305898@g.us';
@@ -553,7 +559,11 @@ client.on('message_create', async msg => {
 
                     let listMsg = '📅 *DAFTAR TUGAS AKTIF* 📅\n\n';
                     tasks.forEach((t, i) => {
-                        listMsg += `${i + 1}. *${t.title}*\n   📚 ${t.course}\n   🗓️ Deadline: ${moment(t.deadline).format('DD MMM YYYY')}\n   👥 ${t.participants.join(', ') || 'Semua'}\n   🆔 \`${t._id}\`\n\n`;
+                        listMsg += `${i + 1}. *${t.title}*\n`;
+                        listMsg += `   📚 ${t.course}\n`;
+                        listMsg += `   🗓️ ${moment(t.deadline).format('DD MMM YYYY')}\n`;
+                        listMsg += `   👥 ${t.participants.join(', ') || 'Semua'}\n`;
+                        listMsg += `   🆔 \`${t._id}\`\n\n`;
                     });
                     msg.reply(listMsg + '_Ketik !tugas hapus [ID] untuk menghapus._');
                 } catch (err) {
