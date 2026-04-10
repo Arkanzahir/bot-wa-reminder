@@ -420,3 +420,21 @@ client.on('message_create', async msg => {
 client.initialize();
 app.get('/', (req, res) => res.send('Bot Active'));
 app.listen(port, () => console.log(`Server on ${port}`));
+
+// ======= GRACEFUL SHUTDOWN =======
+// Menutup koneksi dengan rapi saat bot dimatikan
+const shutdown = async (signal) => {
+    console.log(`\n🛑 [${signal}] Mematikan bot secara bersih...`);
+    try {
+        if (client) await client.destroy();
+        await mongoose.connection.close();
+        console.log('✅ Koneksi ditutup. Sampai jumpa!');
+        process.exit(0);
+    } catch (err) {
+        console.error('❌ Error saat shutdown:', err);
+        process.exit(1);
+    }
+};
+
+process.on('SIGINT', () => shutdown('SIGINT'));
+process.on('SIGTERM', () => shutdown('SIGTERM'));
