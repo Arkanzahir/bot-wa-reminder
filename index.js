@@ -184,7 +184,7 @@ client.on('ready', () => {
                 let report = '📢 *PENGINGAT TUGAS KULIAH* 📢\n\nAda tugas yang mendekati deadline nih:\n\n';
                 tasks.forEach((t, i) => {
                     const daysLeft = moment(t.deadline).diff(moment().startOf('day'), 'days');
-                    const status = daysLeft === 0 ? '⚠️ *HARI INI!*' : daysLeft === 1 ? '🔴 *BESOK!*' : '🟡 H-${daysLeft}';
+                    const status = daysLeft === 0 ? '⚠️ *HARI INI!*' : daysLeft === 1 ? '🔴 *BESOK!*' : `🟡 H-${daysLeft}`;
                     report += `${i + 1}. *${t.title}*\n   📚 ${t.course}\n   🗓️ ${moment(t.deadline).format('DD MMM')}\n   ⏰ Status: ${status}\n\n`;
                 });
 
@@ -376,7 +376,7 @@ async function initializeDailySchedule() {
                 daftarPeserta += `${emoji} ${names}\n└ ${mk.matkul} — ${mk.ruang}\n\n`;
             });
 
-            const msgTeks = `🎓 *PENGINGAT JADWAL KULIAH* 🎓\n📅 ${namaHari}, ${group.jam} WIB\n\n${daftarPeserta.trim()}\n\n_"Jangan biarkan rasa malas ngelahin mimpi yang kamu kejar"_`;
+            const msgTeks = `🎓 *PENGINGAT JADWAL KULIAH* 🎓\n📅 ${namaHari}, ${group.jam} WIB\n\n${daftarPeserta.trim()}\n\n_"Jangan biarkan rasa malas ngalahin mimpi yang kamu kejar"_`;
 
             scheduleUniversityMessage(`${cronMnt} ${cronHr} * * ${cronDay}`, msgTeks, group.dest, allMentions);
         });
@@ -480,15 +480,16 @@ client.on('message_create', async msg => {
             msg.reply(`📂 *DAFTAR TARGET AKTIF:*\n\n${list}\n\n_(Total: ${TARGET_NUMBERS.length} Tujuan)_`);
         }
 
-        // 5. Fitur Bantuan / Panduan
+        // 5. Fitur Bantuan / Panduan Admin
         if (msg.body === '!help' || msg.body === '!bantuan') {
-            msg.reply(`🤖 *PANDUAN ADMIN BOT SHOLAT* 🤖\n\n` +
-            `Berikut panduan penulisan perintahnya:\n\n` +
-            `1️⃣ *!ping*\n└ Fungsi: Mengetahui ID dari sebuah chat/grup.\n└ Cara: Ketik !ping di grup yang dituju\n\n` +
-            `2️⃣ *!tambah <ID> <Kota> <Nama>*\n└ Fungsi: Mendaftarkan grup/orang ke alarm sholat.\n└ Cara: \`!tambah 12345@g.us Surabaya Grup Keluarga\`\n\n` +
-            `3️⃣ *!hapus <ID>*\n└ Fungsi: Menghapus grup/orang dari alarm.\n└ Cara: \`!hapus 12345@g.us\`\n\n` +
-            `4️⃣ *!cek*\n└ Fungsi: Melihat daftar target beserta kota masing-masing.\n\n` +
-            `⚠️ _Catatan: Saat mencopy ID, pastikan tanda bintang (*) atau spasi berlebih tidak ikut tercopy!_`);
+            msg.reply(`🤖 *PANDUAN ADMIN BOT* 🤖\n\n` +
+            `Berikut perintah khusus untuk kamu:\n\n` +
+            `1️⃣ *!ping*\n└ Cek ID Grup/Chat.\n\n` +
+            `2️⃣ *!tambah <ID> <Kota> <Nama>*\n└ Tambah target alarm sholat.\n\n` +
+            `3️⃣ *!hapus <ID>*\n└ Hapus target alarm sholat.\n\n` +
+            `4️⃣ *!cek*\n└ Cek daftar target alarm aktif.\n\n` +
+            `5️⃣ *!tugas*\n└ Kamu juga bisa pakai semua fitur tugas (ketik *!tugas list* untuk mulai).\n\n` +
+            `⚠️ _Gunakan dengan bijak ya bos!_`);
         }
     }
 
@@ -498,6 +499,16 @@ client.on('message_create', async msg => {
     const isRegistered = Object.values(MENTIONS_DB).some(jid => jid === sender || jid.replace('@c.us', '@s.whatsapp.net') === sender);
 
     if (isOwner || isRegistered) {
+        // Fitur Bantuan Tugas (Untuk semua yang terdaftar)
+        if (msg.body === '!help' && !isOwner) {
+            msg.reply(`📝 *PANDUAN FITUR TUGAS* 📝\n\n` +
+            `Kamu bisa mengelola tugas bareng-bareng di sini:\n\n` +
+            `1️⃣ *!tugas tambah Nama | Matkul | YYYY-MM-DD | Peserta*\n└ Contoh: !tugas tambah Laporan | Sisop | 2024-04-20 | Arkan, Rafi\n\n` +
+            `2️⃣ *!tugas cek*\n└ Liat semua daftar tugas aktif.\n\n` +
+            `3️⃣ *!tugas hapus <ID>*\n└ Hapus tugas yang sudah selesai.\n\n` +
+            `💡 _Bot akan otomatis ngasih pengingat setiap jam 7 pagi kalau deadline sudah dekat!_`);
+        }
+
         if (msg.body.startsWith('!tugas ')) {
             const command = msg.body.split(' ')[1];
             
