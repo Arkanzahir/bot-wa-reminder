@@ -262,18 +262,21 @@ async function initializeDailySchedule() {
                 const emoji = emojiList[idx] || `${idx + 1}.`;
                 
                 let names = '';
-                // Jika dikirim ke grup, gunakan format mention @nomor agar muncul tag biru
+                // Jika dikirim ke grup, gunakan format mention @nomor agar jadi biru
                 if (group.dest.includes('@g.us')) {
                     names = mk.peserta.map(p => {
-                        const contactId = MENTIONS_DB[p];
-                        if (contactId) {
-                            // Ambil nomor telepon saja (hapus @c.us / @lid)
-                            const phoneNumber = contactId.split('@')[0];
-                            allMentions.push(contactId);
+                        const jid = MENTIONS_DB[p];
+                        if (jid) {
+                            // Ambil bagian nomor saja (sebelum @)
+                            const phoneNumber = jid.split('@')[0];
                             return '@' + phoneNumber;
                         }
-                        return p; // fallback jika tidak ada di MENTIONS_DB
+                        return p; // fallback ke nama hiasa jika tidak ada di DB
                     }).join(', ');
+
+                    mk.peserta.forEach(p => {
+                        if (MENTIONS_DB[p]) allMentions.push(MENTIONS_DB[p]);
+                    });
                 } else {
                     // Jika ke japri, cukup sebut nama biasa karena sedang membaca chat dirinya
                     names = mk.peserta.join(', ');
